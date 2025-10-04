@@ -1,0 +1,69 @@
+Overview
+- This script builds a neon-styled Tic‑Tac‑Toe (X vs O) game using Python’s Turtle module; it draws a centered 3×3 grid, handles player clicks, runs a simple AI opponent, shows a compact scoreboard, and animates a winning slash when a player wins.
+Screen setup and constants
+- import turtle — load the Turtle graphics library.
+- wn = turtle.Screen() — create the main drawing window.
+- wn.title("XO Game with AI") — set the window title that appears on the OS window bar.
+- wn.bgcolor("black") — set a dark background to make neon colors pop.
+- wn.setup(width=600, height=600) — size the window so the board fits nicely.
+- wn.tracer(0) — turn off automatic screen updates for smooth manual redraws and animations.
+- GRID_SIZE = 500 — total pixel size of the square game board.
+- CELL_SIZE = GRID_SIZE / 3 — size of each cell, derived from GRID_SIZE.
+- TOP_LEFT_X = -GRID_SIZE / 2 and TOP_LEFT_Y = GRID_SIZE / 2 — compute the top-left coordinates so the grid is exactly centered on screen.
+Grid drawer
+- grid_drawer = turtle.Turtle() — turtle object dedicated to drawing the grid lines.
+- grid_drawer.color("cyan") — neon cyan for grid lines.
+- grid_drawer.pensize(4) — thicker stroke to match neon aesthetic.
+- grid_drawer.hideturtle() — hide the drawing cursor for a clean look.
+- grid_drawer.speed(0) — instant drawing speed.
+- def draw_grid(): — draws the outer square and the two internal vertical and horizontal lines using the TOP_LEFT anchor and CELL_SIZE to ensure perfect alignment; called once at start and after resets.
+Score variables and game state
+- player_score = 0; ai_score = 0 — keep only the two scores you requested (player and opponent).
+- game_over = False — boolean that prevents moves after a win until reset.
+Scoreboard writer
+- score_writer = turtle.Turtle() — a turtle used only to write the score text.
+- score_writer.hideturtle(); score_writer.penup() — hide the cursor and lift the pen so drawing doesn’t leave marks.
+- score_writer.color("green"); score_writer.goto(0, 270) — neon green text positioned above the board.
+- def update_scoreboard(): — clears and redraws the single-line scoreboard (Player vs AI) so it always shows current scores.
+Symbol drawer
+- symbol_drawer = turtle.Turtle() — turtle for drawing X and O characters so grid drawing and text drawing are separated.
+- symbol_drawer.hideturtle(); symbol_drawer.penup(); symbol_drawer.speed(0) — clean, instant drawing of symbols without extra marks.
+Winning line drawer
+- line_drawer = turtle.Turtle() — dedicated turtle to draw the animated winning slash.
+- line_drawer.hideturtle(); line_drawer.pensize(6); line_drawer.color("deeppink") — thick pink line to highlight the winning combination.
+Game board representation
+- board = [["", "", ""], ["", "", ""], ["", "", ""]] — a 3×3 nested list storing "", "X", or "O"; this is the single source of truth for the game state.
+Drawing symbols and board
+- def draw_symbol(player, row, col): — compute the center of the requested cell using TOP_LEFT and CELL_SIZE, then apply a small vertical offset so the baseline of the font visually centers inside the cell.
+- x = TOP_LEFT_X + col * CELL_SIZE + CELL_SIZE / 2 — x center of the cell.
+- y = TOP_LEFT_Y - row * CELL_SIZE - CELL_SIZE / 2 — y center of the cell.
+- y_offset = -75 if player == "X" else -80 — empirical tweak to push characters slightly down for better visual centering; adjust if your system renders fonts differently.
+- symbol_drawer.goto(x, y + y_offset) — move to the adjusted center.
+- symbol_drawer.color("lime" if player == "X" else "deeppink") — neon green for X, neon pink for O.
+- symbol_drawer.write(player, align="center", font=("Arial", 110, "bold")) — large bold font fills the cell.
+- def draw_board(): — clears previous symbols and redraws all X/O from the board array so the graphical state always matches the logical state.
+Win detection and animation
+- def get_win_pattern(player): — checks rows, columns, and both diagonals for a three-in-a-row for the given player; returns the winning 3 cell coordinates as [(r1,c1),(r2,c2),(r3,c3)] or None.
+- def highlight_win(cells): — draws an animated line from the first winning cell center to the last cell center to highlight the win:
+- compute endpoints using the same center logic as draw_symbol (without vertical offset).
+- animate the line in steps increments with manual wn.update() so the drawing looks smooth and intentional; the line is cleared before drawing so only the final winning line is visible.
+Simple AI logic
+- def ai_move(): — the AI does nothing if game_over is True. Otherwise:
+- first loop: try placing "O" in each empty cell temporarily and check whether that creates a win for O; if yes, keep it and return (win).
+- second loop: try placing "X" in each empty cell temporarily and if that would let X win next move, instead place "O" there to block and return.
+- third loop: if no immediate win or block, place "O" in the first available empty cell (simple heuristic, deterministic).
+Reset and click handling
+- def reset_board(): — clears the board array, resets game_over = False, clears drawings, redraws the grid and board, and updates the scoreboard. Called with a short timer after a win so the player sees the result.
+- def click(x, y): — main event handler bound to mouse clicks:
+- return immediately if game_over is True so no further moves occur after a decisive win.
+- compute col and row based on click coordinates relative to TOP_LEFT, ensuring consistent mapping between mouse and cell indices.
+- if the clicked cell is empty, write "X" there and redraw.
+- check for player win with get_win_pattern("X"); if found, set game_over, animate the win, increment player score, update the scoreboard, and schedule reset_board.
+- if no player win, call ai_move() and redraw; then check for AI win similarly and do the same sequence if AI wins.
+- if the board becomes full with no winner, set game_over and schedule a reset (draw is not scored since you asked to keep only player/opponent scores).
+Event loop start
+- wn.onclick(click) — bind mouse clicks to the click handler.
+- update_scoreboard() — draw the initial scoreboard.
+- wn.update() — initial manual update to render everything once (grid, scoreboard).
+- wn.mainloop() — enter Turtle’s event loop so the program remains responsive to clicks and timers.
+
